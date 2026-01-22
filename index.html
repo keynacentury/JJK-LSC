@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Kamiko Loading Screen</title>
+    <style>
+        @font-face {
+            font-family: 'ExoSemiBold';
+            src: url('fonts/exo2-semibold.ttf') format('truetype');
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+            background: #000;
+            font-family: 'ExoSemiBold';
+            display: flex;
+            flex-direction: column;
+        }
+
+        #VideoContainer {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            flex-grow: 1;
+        }
+
+        #BackgroundVideo {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+        }
+
+        #BackgroundImage {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+
+        #BackgroundImage.ActiveBackground {
+            opacity: 1;
+        }
+
+        #UpperImage {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        #HeaderBlock {
+            position: absolute;
+            top: 2.5vh;
+            right: 2.5vw;
+            z-index: 2;
+        }
+
+        #LogoImage {
+            width: 55px;
+            height: 88px;
+            filter: drop-shadow(0 0 5px rgba(255,174,0,0.5));
+            animation: GlowLogo 1.5s infinite alternate, SlideLeftLogo 1s ease-out forwards;
+            opacity: 0;
+        }
+
+        #FooterBlock {
+            position: absolute;
+            bottom: 3vh;
+            left: 2vw;
+            z-index: 2;
+            max-width: 40vw;
+        }
+
+        #HintTitle {
+            font-size: clamp(16px,1.5vw,20px);
+            color: #fff;
+            margin-bottom: 1vh;
+            animation: SlideRightTitle 1s ease-out forwards;
+            opacity: 0;
+        }
+
+        #HintText {
+            font-size: clamp(12px,1.1vw,16px);
+            color: #fff;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            max-width: 600px;
+        }
+
+        #CenterLoadingBlock {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+            z-index: 3;
+            width: 100vw;
+            max-width: 570px;
+            min-width: 260px;
+            text-align: center;
+            color: #fff;
+        }
+
+        #ProcessName {
+            font-size: clamp(14px,1.3vw,18px);
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            margin-bottom: 1.6vh;
+            text-shadow: 0 0 6px rgba(0,0,0,.8);
+        }
+
+        #ProcessBar {
+            width: 100%;
+            height: 15px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.12);
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0,0,0,.7);
+        }
+
+        #ProcessBarFill {
+            width: 0%;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(
+                95deg,
+                rgb(86,171,183) 0%,
+                rgb(86,171,183) 70%,
+                rgb(57,232,255) 100%
+            );
+            transition: width .3s ease-out;
+        }
+
+        @keyframes GlowLogo {
+            from { filter: drop-shadow(0 0 2.5px rgba(149,206,200,.9)); }
+            to { filter: drop-shadow(0 0 5px rgba(33,45,44,0)); }
+        }
+
+        @keyframes SlideRightTitle {
+            from { transform: translateX(-100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes SlideLeftLogo {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="VideoContainer">
+        <video id="BackgroundVideo" 
+               src="videos/1080.mp4" 
+               autoplay 
+               muted 
+               loop 
+               playsinline>
+        </video>
+        
+        <!-- !<img id="BackgroundImage" class="ActiveBackground"> -->
+        <img id="UpperImage" src="img/kamiko_upper.png">
+        
+        <div id="HeaderBlock">
+            <img id="LogoImage" src="img/logo.png">
+        </div>
+        
+        <div id="FooterBlock">
+            <div id="HintTitle">ИНТЕРЕСНЫЕ ФАКТЫ</div>
+            <div id="HintText">Некий Тамерлан-Куки проник в ваш компьютер...</div>
+        </div>
+
+        <div id="CenterLoadingBlock">
+            <div id="ProcessName">Подготовка загрузки...</div>
+            <div id="ProcessBar">
+                <div id="ProcessBarFill"></div>
+            </div>
+        </div>
+
+        <audio id="BackgroundMusicAudio" src="sounds/backmusic.mp3" autoplay loop style="display:none"></audio>
+    </div>
+
+    <script>
+        const HintCollectionArray = [
+            "ВОЗМОЖНО КОГДА-ТО НА ЭТОТ СЕРВЕР ЗАЙДУТ ФРАНЦУЗЫ :]",
+            "КОГДА-ТО ВСЁ БЫЛО ПРЕКРАСНО, НО ТЕПЕРЬ ВСЁ ЕЩЁ ЛУЧШЕ!",
+            "ПРАКТИЧЕСКИ ВСЕ НАШИ РАБОТНИКИ ОТКРЫТЫ К ПРЕДЛОЖЕНИЯМ, НЕ СТЕСНЯЙТЕСЬ.",
+            "РАНО ИЛИ ПОЗДНО МЫ НАЧНЁМ ЗАНИМАТЬСЯ РЕВОРКАМИ :D",
+            "ЕСЛИ ЭТОТ ЭКРАН ДОЛГО ЗАГРУЖАЕТСЯ — НЕ ПАНИКУЙТЕ, ТАК И ЗАДУМАНО.",
+            "ГОВОРЯТ, ЧТО ЛУЧШЕ ВСЕГО ИГРАЕТСЯ ТАМ, ГДЕ НЕ ЛАГАЕТ… К СОЖАЛЕНИЮ, ЭТО НЕ ПРО НАС.",
+            "НАШ СЕРВЕР НАСТОЛЬКО КОМФОРТНЫЙ, ЧТО НЕКОТОРЫЕ БАГИ ЖИВУТ ТУТ ГОДАМИ.",
+            "КОГДА-НИБУДЬ МЫ ДОБАВИМ НОВЫЙ КОНТЕНТ… НАПРИМЕР, НОРМАЛЬНЫЕ МК ДЕМОНАМ.",
+            "ЕСЛИ ВЫ УВИДЕЛИ ЧТО-ТО СТРАННОЕ — ТАК И ДОЛЖНО БЫТЬ. МЫ ТАК ЗАДУМАЛИ.",
+            "СЕРВЕР МОЖЕТ НЕ ВСЁ ОБЕЩАТЬ, НО СТАБИЛЬНЫЕ КРАШИ — ГАРАНТИЯ.",
+            "НАШ ДИЗАЙНЕР ГЕНИЙ. ОН САМ ТАК ГОВОРИТ.",
+            "В БУДУЩЕМ МЫ ПЛАНИРУЕМ ДОРАБОТАТЬ МНОГОЕ...",
+            "ЕСЛИ ВЫ ЭТО ЧИТАЕТЕ — ВЫ УЖЕ ЗАГРУЖАЕТЕСЬ ЛУЧШЕ, ЧЕМ БОЛЬШИНСТВО.",
+            "НЕ БОЙТЕСЬ ОБРАЩАТЬСЯ К АДМИНАМ — ОНИ НЕ КУСАЮТСЯ… ЧАСТО.",
+            "ЕСЛИ ОСВЕЩЕНИЕ НАШЕЙ КАРТЫ ЖГЁТ ВАМ ГЛАЗА, ТО ЭТО ПЕЧАЛЬНО."
+        ];
+
+        const BackgroundCollectionArray = [
+            "img/background1.png",
+            "img/background2.png",
+            "img/background3.png",
+            "img/background4.png"
+        ];
+
+        let CurrentBackgroundIndexValue = 0;
+        let CurrentHintIndexValue = 0;
+        let FilesTotalAmountValue = 0;
+        let FilesNeededAmountValue = 0;
+        let HintTypingIntervalIdentifierValue = null;
+        let BackgroundMusicStartedFlagValue = false;
+
+        window.onload = function() {
+            const backgroundVideo = document.getElementById("BackgroundVideo");
+            const BackgroundImageElement = document.getElementById("BackgroundImage");
+            const BackgroundMusicAudioElement = document.getElementById("BackgroundMusicAudio");
+
+            backgroundVideo.play().catch(() => {});
+
+            CurrentBackgroundIndexValue = Math.floor(Math.random() * BackgroundCollectionArray.length);
+            BackgroundImageElement.src = BackgroundCollectionArray[CurrentBackgroundIndexValue];
+
+            CurrentHintIndexValue = Math.floor(Math.random() * HintCollectionArray.length);
+            const InitialHintTextValue = HintCollectionArray[CurrentHintIndexValue];
+            StartHintTypingText(InitialHintTextValue);
+
+            if (BackgroundMusicAudioElement) {
+                BackgroundMusicAudioElement.volume = 0.3; /* MARK SOUND */
+            }
+
+            setInterval(UpdateVisualContentBlock,5500);
+        };
+
+        function GetNextBackgroundIndexValue() {
+            let NextBackgroundIndexValue;
+            do {
+                NextBackgroundIndexValue = Math.floor(Math.random() * BackgroundCollectionArray.length);
+            } while (NextBackgroundIndexValue === CurrentBackgroundIndexValue && BackgroundCollectionArray.length > 1);
+            return NextBackgroundIndexValue;
+        }
+
+        function GetNextHintIndexValue() {
+            let NextHintIndexValue;
+            do {
+                NextHintIndexValue = Math.floor(Math.random() * HintCollectionArray.length);
+            } while (NextHintIndexValue === CurrentHintIndexValue && HintCollectionArray.length > 1);
+            return NextHintIndexValue;
+        }
+
+        function StartHintTypingText(NewHintTextValue) {
+            const HintTextElement = document.getElementById("HintText");
+            if (!HintTextElement) return;
+            if (HintTypingIntervalIdentifierValue) {
+                clearInterval(HintTypingIntervalIdentifierValue);
+                HintTypingIntervalIdentifierValue = null;
+            }
+            HintTextElement.textContent = "";
+            HintTextElement.style.opacity = "0.5";
+            let CurrentCharIndexValue = 0;
+            HintTypingIntervalIdentifierValue = setInterval(function() {
+                if (CurrentCharIndexValue >= NewHintTextValue.length) {
+                    clearInterval(HintTypingIntervalIdentifierValue);
+                    HintTypingIntervalIdentifierValue = null;
+                    return;
+                }
+                HintTextElement.textContent += NewHintTextValue.charAt(CurrentCharIndexValue);
+                CurrentCharIndexValue++;
+            },35);
+        }
+
+        function UpdateVisualContentBlock() {
+            const HintTextElement = document.getElementById("HintText");
+            const BackgroundImageElement = document.getElementById("BackgroundImage");
+            if (!HintTextElement || !BackgroundImageElement) return;
+            HintTextElement.style.opacity = "0";
+            BackgroundImageElement.classList.remove("ActiveBackground");
+            setTimeout(function() {
+                CurrentHintIndexValue = GetNextHintIndexValue();
+                CurrentBackgroundIndexValue = GetNextBackgroundIndexValue();
+                const NewHintTextValue = HintCollectionArray[CurrentHintIndexValue];
+                BackgroundImageElement.src = BackgroundCollectionArray[CurrentBackgroundIndexValue];
+                BackgroundImageElement.classList.add("ActiveBackground");
+                StartHintTypingText(NewHintTextValue);
+            },1000);
+        }
+
+        function UpdateLoadingProgressLine() {
+            const ProcessBarFillElement = document.getElementById("ProcessBarFill");
+            const ProcessPercentElement = document.getElementById("ProcessPercent");
+            if (!ProcessBarFillElement) return;
+
+            if (FilesTotalAmountValue <= 0) {
+                if (FilesNeededAmountValue > 0) {
+                    FilesTotalAmountValue = FilesNeededAmountValue;
+                } else {
+                    ProcessBarFillElement.style.width = "0%";
+                    if (ProcessPercentElement) ProcessPercentElement.textContent = "0%";
+                    return;
+                }
+            }
+
+            const CompletedPartValue = Math.max(0,Math.min(1,(FilesTotalAmountValue - FilesNeededAmountValue) / FilesTotalAmountValue));
+            const PercentNumberValue = Math.round(CompletedPartValue * 100);
+            ProcessBarFillElement.style.width = PercentNumberValue + "%";
+            if (ProcessPercentElement) ProcessPercentElement.textContent = PercentNumberValue + "%";
+        }
+
+        function SetFilesTotal(TotalAmountValue) {
+            FilesTotalAmountValue = parseInt(TotalAmountValue) || 0;
+            UpdateLoadingProgressLine();
+        }
+
+        function SetFilesNeeded(NeededAmountValue) {
+            FilesNeededAmountValue = parseInt(NeededAmountValue) || 0;
+            UpdateLoadingProgressLine();
+        }
+
+        function SetStatusChanged(StatusTextValue) {
+            const ProcessNameElement = document.getElementById("ProcessName");
+            if (ProcessNameElement) ProcessNameElement.textContent = StatusTextValue;
+        }
+
+        function StartBackgroundMusicPlayback() {
+            const BackgroundMusicAudioElement = document.getElementById("BackgroundMusicAudio");
+            if (!BackgroundMusicAudioElement || BackgroundMusicStartedFlagValue) return;
+            const PlayPromiseObjectValue = BackgroundMusicAudioElement.play();
+            if (PlayPromiseObjectValue && PlayPromiseObjectValue.catch) {
+                PlayPromiseObjectValue.catch(function() {});
+            }
+            BackgroundMusicStartedFlagValue = true;
+        }
+    </script>
+</body>
+</html>
