@@ -32,18 +32,22 @@
             object-fit: cover;
         }
 
-        #Overlay {
+        #DarkenedVideo {
             position: absolute;
             inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            mix-blend-mode: multiply;
             background: rgba(0, 0, 0, 0.8);
-            z-index: 1;
+            pointer-events: none;
         }
 
         #HeaderBlock {
             position: absolute;
             top: 2.5vh;
             right: 2.5vw;
-            z-index: 2;
+            z-index: 10;
         }
 
         #LogoImage {
@@ -58,7 +62,7 @@
             position: absolute;
             bottom: 3vh;
             left: 2vw;
-            z-index: 2;
+            z-index: 10;
             max-width: 40vw;
         }
 
@@ -74,7 +78,6 @@
             font-size: clamp(12px,1.1vw,16px);
             color: #8f8f8f;
             opacity: 1;
-            animation: SlideRightTitle 1s ease-out forwards;
             max-width: 600px;
         }
 
@@ -83,7 +86,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%,-50%);
-            z-index: 3;
+            z-index: 20;
             width: 100vw;
             max-width: 570px;
             min-width: 260px;
@@ -135,7 +138,7 @@
 <body>
     <div id="VideoContainer">
         <video id="BackgroundVideo" src="videos/480.mp4" autoplay muted loop playsinline></video>
-        <div id="Overlay"></div>
+        <div id="DarkenedVideo"></div>
         
         <div id="HeaderBlock">
             <img id="LogoImage" src="img/logonew.png">
@@ -162,9 +165,9 @@
             "РАНО ИЛИ ПОЗДНО МЫ НАЧНЁМ ЗАНИМАТЬСЯ РЕВОРКАМИ :D",
             "ЕСЛИ ЭТОТ ЭКРАН ДОЛГО ЗАГРУЖАЕТСЯ — НЕ ПАНИКУЙТЕ, ТАК И ЗАДУМАНО.",
             "ГОВОРЯТ, ЧТО ЛУЧШЕ ВСЕГО ИГРАЕТСЯ ТАМ, ГДЕ НЕ ЛАГАЕТ… К СОЖАЛЕНИЮ, ЭТО НЕ ПРО НАС.",
-            "НАШ СЕРВЕР НАСТОЛЬКО КОМФОРТНЫЙ, ЧТО НЕКОТОРЫЕ БАГИ ЖИВУТ ТУТ ГОДАМИ."
+            "НАШ СЕРВЕР НАСТОЛЬКО КОМФОРТНЫЙ, ЧТО НЕКОТОРЫЕ БАГИ ЖИВУТ ТУТ ГОДАМИ.",
             "ЕСЛИ ВЫ УВИДЕЛИ ЧТО-ТО СТРАННОЕ — ТАК И ДОЛЖНО БЫТЬ. МЫ ТАК ЗАДУМАЛИ.",
-            "СЕРВЕР МОЖЕТ НЕ ВСЁ ОБЕЩАТЬ, НО СТАБИЛЬНЫЕ КРАШИ — ГАРАНТИЯ."
+            "СЕРВЕР МОЖЕТ НЕ ВСЁ ОБЕЩАТЬ, НО СТАБИЛЬНЫЕ КРАШИ — ГАРАНТИЯ.",
             "В БУДУЩЕМ МЫ ПЛАНИРУЕМ ДОРАБОТАТЬ МНОГОЕ...",
             "ЕСЛИ ВЫ ЭТО ЧИТАЕТЕ — ВЫ УЖЕ ЗАГРУЖАЕТЕСЬ ЛУЧШЕ, ЧЕМ БОЛЬШИНСТВО.",
             "НЕ БОЙТЕСЬ ОБРАЩАТЬСЯ К АДМИНАМ — ОНИ НЕ КУСАЮТСЯ… ЧАСТО."
@@ -173,6 +176,21 @@
         let HintTypingIntervalIdentifierValue = null;
         let FilesTotalAmountValue = 0;
         let FilesNeededAmountValue = 0;
+
+        window.SetFilesTotal = function(TotalAmountValue) {
+            FilesTotalAmountValue = parseInt(TotalAmountValue) || 0;
+            UpdateLoadingProgressLine();
+        };
+
+        window.SetFilesNeeded = function(NeededAmountValue) {
+            FilesNeededAmountValue = parseInt(NeededAmountValue) || 0;
+            UpdateLoadingProgressLine();
+        };
+
+        window.SetStatusChanged = function(StatusTextValue) {
+            const ProcessNameElement = document.getElementById("ProcessName");
+            if (ProcessNameElement) ProcessNameElement.textContent = StatusTextValue;
+        };
 
         function StartHintTypingText(NewHintTextValue) {
             const HintTextElement = document.getElementById("HintText");
@@ -194,19 +212,6 @@
             }, 35);
         }
 
-        window.onload = function() {
-            const backgroundVideo = document.getElementById("BackgroundVideo");
-            backgroundVideo.play().catch(() => {});
-
-            const randomHintIndex = Math.floor(Math.random() * HintCollectionArray.length);
-            StartHintTypingText(HintCollectionArray[randomHintIndex]);
-
-            setInterval(function() {
-                const nextHintIndex = Math.floor(Math.random() * HintCollectionArray.length);
-                StartHintTypingText(HintCollectionArray[nextHintIndex]);
-            }, 5500);
-        };
-
         function UpdateLoadingProgressLine() {
             const ProcessBarFillElement = document.getElementById("ProcessBarFill");
             if (!ProcessBarFillElement) return;
@@ -225,24 +230,18 @@
             ProcessBarFillElement.style.width = PercentNumberValue + "%";
         }
 
-        function SetFilesTotal(TotalAmountValue) {
-            FilesTotalAmountValue = parseInt(TotalAmountValue) || 0;
-            UpdateLoadingProgressLine();
-        }
+        window.onload = function() {
+            const backgroundVideo = document.getElementById("BackgroundVideo");
+            backgroundVideo.play().catch(() => {});
 
-        function SetFilesNeeded(NeededAmountValue) {
-            FilesNeededAmountValue = parseInt(NeededAmountValue) || 0;
-            UpdateLoadingProgressLine();
-        }
+            const randomHintIndex = Math.floor(Math.random() * HintCollectionArray.length);
+            StartHintTypingText(HintCollectionArray[randomHintIndex]);
 
-        function SetStatusChanged(StatusTextValue) {
-            const ProcessNameElement = document.getElementById("ProcessName");
-            if (ProcessNameElement) ProcessNameElement.textContent = StatusTextValue;
-        }
+            setInterval(function() {
+                const nextHintIndex = Math.floor(Math.random() * HintCollectionArray.length);
+                StartHintTypingText(HintCollectionArray[nextHintIndex]);
+            }, 5500);
+        };
     </script>
 </body>
 </html>
-
-
-
-
